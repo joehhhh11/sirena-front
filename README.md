@@ -1,11 +1,12 @@
-# Proyecto Frontend - Cine App
+# Proyecto Frontend - Cine App (Angular)
 
-Este proyecto es el frontend de la aplicación de gestión de películas y turnos de cine.
+Este proyecto es el frontend de la aplicación de gestión de películas y turnos de cine usando Angular.
 
 ## Requisitos
 
 - Node.js >= 18.x
 - npm >= 9.x o yarn >= 1.x
+- Angular CLI >= 16.x
 - Navegador moderno (Chrome, Edge, Firefox)
 
 ## Instalación
@@ -25,61 +26,55 @@ npm install
 # yarn install
 ```
 
-## Variables de Entorno
-
-Crear un archivo `.env` en la raíz del proyecto:
-
-```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_APP_NAME=CineApp
-```
-
-> Nota: `VITE_API_BASE_URL` se usa para todas las llamadas a la API. Ajusta según tu servidor backend.
-
-## Scripts Disponibles
+3. Ejecutar la aplicación en modo desarrollo:
 
 ```bash
-# Ejecutar la aplicación en modo desarrollo
-npm run dev
-
-# Construir la aplicación para producción
-npm run build
-
-# Servir la versión de producción localmente
-npm run preview
-
-# Ejecutar tests (si existen)
-npm run test
+ng serve
 ```
+
+Por defecto, la aplicación se servirá en `http://localhost:4200/`.
+
+## Variables de Entorno
+
+Crear un archivo `src/environments/environment.ts` para desarrollo:
+
+```ts
+export const environment = {
+  production: false,
+  apiBaseUrl: 'http://localhost:3000/api',
+};
+```
+
+Y para producción `src/environments/environment.prod.ts`:
+
+```ts
+export const environment = {
+  production: true,
+  apiBaseUrl: 'https://mi-dominio.com/api',
+};
+```
+
+> Nota: `apiBaseUrl` se usa para todas las llamadas a la API.
 
 ## Estructura del Proyecto
 
 ```
 src/
-├─ assets/         # Imágenes, iconos, estilos
-├─ components/     # Componentes reutilizables
-├─ pages/          # Vistas o páginas principales
-├─ services/       # Servicios de conexión a API
-├─ App.vue         # Componente raíz
-├─ main.ts         # Entrada de la aplicación
+├─ app/
+│  ├─ components/      # Componentes reutilizables
+│  ├─ pages/           # Páginas o vistas principales
+│  ├─ services/        # Servicios para consumir la API
+│  ├─ app.module.ts    # Módulo raíz
+│  └─ app.component.*  # Componente raíz
+├─ assets/             # Imágenes, iconos, estilos
+├─ environments/       # Configuración de entornos
 ```
 
-## Conexión a la API
 
-Ejemplo de servicio para turnos:
 
-```ts
-import axios from 'axios';
+## Scripts Útiles
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
-});
+```bash
+# Ejecutar la app en modo desarrollo
+ng serve
 
-export const TurnosService = {
-  getAll: () => api.get('/turnos'),
-  getOne: (id: number) => api.get(`/turnos/${id}`),
-  create: (data: any) => api.post('/turnos', data),
-  update: (id: number, data: any) => api.put(`/turnos/${id}`, data),
-  delete: (id: number) => api.delete(`/turnos/${id}`),
-};
-```
