@@ -1,0 +1,249 @@
+<div class="p-4">
+  <h2 class="text-2xl font-bold mb-4">Películas</h2>
+
+  <div class="flex flex-wrap gap-2 mb-4">
+    <input [(ngModel)]="search" placeholder="Buscar título..." class="border p-2 rounded" />
+    <input [(ngModel)]="filtroGenero" placeholder="Género" class="border p-2 rounded" />
+    <select [(ngModel)]="filtroEstado" class="border p-2 rounded">
+      <option value="">Estado</option>
+      <option value="Activo">Activo</option>
+      <option value="Inactivo">Inactivo</option>
+    </select>
+    <input
+      [(ngModel)]="filtroFechaDesde"
+      type="date"
+      class="border p-2 rounded"
+      placeholder="Desde"
+    />
+    <input
+      [(ngModel)]="filtroFechaHasta"
+      type="date"
+      class="border p-2 rounded"
+      placeholder="Hasta"
+    />
+    <button (click)="aplicarFiltros()" class="bg-blue-500 text-white px-4 py-2 rounded">
+      Filtrar
+    </button>
+  </div>
+  <button (click)="abrirModal()" class="bg-green-500 text-white px-4 py-2 rounded mb-4">
+    Añadir Película
+  </button>
+
+  <table class="w-full border border-gray-300 mb-4">
+    <thead class="bg-gray-200">
+      <tr>
+        <th class="p-2 border">Título</th>
+        <th class="p-2 border">Duración</th>
+        <th class="p-2 border">Clasificación</th>
+        <th class="p-2 border">Estado</th>
+        <th class="p-2 border">Género</th>
+        <th class="p-2 border">Fecha Estreno</th>
+        <th class="p-2 border">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of peliculas">
+        <td class="p-2 border">{{ p.titulo }}</td>
+        <td class="p-2 border">{{ p.duracionMin }} min</td>
+        <td class="p-2 border">{{ p.clasificacion }}</td>
+        <td class="p-2 border">{{ p.estado }}</td>
+        <td class="p-2 border">{{ p.genero.join(', ') }}</td>
+        <td class="p-2 border">{{ p.fechaEstreno | date : 'shortDate' }}</td>
+        <td class="p-2 border space-x-2">
+          <button (click)="abrirModal(p)" class="bg-yellow-500 text-white px-2 py-1 rounded">
+            Editar
+          </button>
+          <button (click)="eliminar(p.id)" class="bg-red-500 text-white px-2 py-1 rounded">
+            Eliminar
+          </button>
+          <button (click)="asignarTurno(p)" class="bg-blue-600 text-white px-2 py-1 rounded">
+            Turnos
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="flex justify-between items-center">
+    <button
+      (click)="cambiarPagina(-1)"
+      [disabled]="page === 1"
+      class="px-3 py-1 bg-gray-300 rounded"
+    >
+      Anterior
+    </button>
+    <span>Página {{ page }} de {{ totalPaginas }}</span>
+    <button
+      (click)="cambiarPagina(1)"
+      [disabled]="page === totalPaginas"
+      class="px-3 py-1 bg-gray-300 rounded"
+    >
+      Siguiente
+    </button>
+  </div>
+</div>
+
+<div
+  *ngIf="showModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+>
+  <div class="bg-white p-6 rounded shadow-lg w-96">
+    <h3 class="text-lg font-bold mb-4">{{ editando ? 'Editar Película' : 'Nueva Película' }}</h3>
+
+    <form>
+      <input
+        [(ngModel)]="nuevaPelicula.titulo"
+        name="titulo"
+        placeholder="Título"
+        class="w-full border p-2 mb-2"
+      />
+      <textarea
+        [(ngModel)]="nuevaPelicula.sinopsis"
+        name="sinopsis"
+        placeholder="Sinopsis"
+        class="w-full border p-2 mb-2"
+      ></textarea>
+      <input
+        [(ngModel)]="nuevaPelicula.duracionMin"
+        name="duracion"
+        type="number"
+        placeholder="Duración (min)"
+        class="w-full border p-2 mb-2"
+      />
+      <input
+        [(ngModel)]="nuevaPelicula.clasificacion"
+        name="clasificacion"
+        placeholder="Clasificación"
+        class="w-full border p-2 mb-2"
+      />
+      <input
+        [(ngModel)]="nuevaPelicula.genero"
+        name="genero"
+        placeholder="Géneros (coma ,)"
+        class="w-full border p-2 mb-2"
+      />
+      <input
+        [(ngModel)]="nuevaPelicula.fechaEstreno"
+        name="fechaEstreno"
+        type="date"
+        class="w-full border p-2 mb-2"
+      />
+      <p class="text-red-500">{{ backendError }}</p>
+    </form>
+
+    <div class="flex justify-end space-x-2">
+      <button (click)="cerrarModal()" class="px-4 py-2 bg-gray-400 text-white rounded">
+        Cancelar
+      </button>
+      <button (click)="guardar()" class="px-4 py-2 bg-blue-600 text-white rounded">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="confirmModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+>
+  <div class="bg-white p-6 rounded shadow-lg w-96 text-center">
+    <p class="mb-4">{{ confirmMessage }}</p>
+    <div class="flex justify-center space-x-4">
+      <button (click)="cerrarConfirmacion()" class="px-4 py-2 bg-gray-400 text-white rounded">
+        Cancelar
+      </button>
+      <button (click)="confirmar()" class="px-4 py-2 bg-red-600 text-white rounded">
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="showTurnoModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+>
+  <div class="bg-white p-6 rounded shadow-lg w-96">
+    <h3 class="text-lg font-bold mb-4">Asignar Turno: {{ peliculaSeleccionada?.titulo }}</h3>
+
+    <form>
+      <input
+        [(ngModel)]="nuevoTurno.sala"
+        name="sala"
+        placeholder="Sala"
+        class="w-full border p-2 mb-2"
+      />
+      <input
+        [(ngModel)]="nuevoTurno.inicio"
+        name="inicio"
+        type="datetime-local"
+        class="w-full border p-2 mb-2"
+      />
+      <input
+        [(ngModel)]="nuevoTurno.fin"
+        name="fin"
+        type="datetime-local"
+        class="w-full border p-2 mb-2"
+      />
+      <input
+        [(ngModel)]="nuevoTurno.precio"
+        name="precio"
+        type="number"
+        placeholder="Precio"
+        class="w-full border p-2 mb-2"
+      />
+      <select [(ngModel)]="nuevoTurno.idioma" name="idioma" class="w-full border p-2 mb-2">
+        <option value="DOB">DOB</option>
+        <option value="SUB">SUB</option>
+      </select>
+      <select [(ngModel)]="nuevoTurno.formato" name="formato" class="w-full border p-2 mb-2">
+        <option value="D2">2D</option>
+        <option value="D3">3D</option>
+      </select>
+      <input
+        [(ngModel)]="nuevoTurno.aforo"
+        name="aforo"
+        type="number"
+        placeholder="Aforo"
+        class="w-full border p-2 mb-2"
+      />
+      <p class="text-red-500">{{ backendErrorTurno }}</p>
+    </form>
+
+    <h4 class="text-md font-semibold mt-4 mb-2">Turnos existentes</h4>
+    <table class="w-full border border-gray-300 mb-4">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2 border">Sala</th>
+          <th class="p-2 border">Inicio</th>
+          <th class="p-2 border">Fin</th>
+          <th class="p-2 border">Precio</th>
+          <th class="p-2 border">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of turnosPelicula" [class.opacity-50]="esSolapado(t)">
+          <td class="p-2 border">{{ t.sala }}</td>
+          <td class="p-2 border">{{ t.inicio | date : 'short' }}</td>
+          <td class="p-2 border">{{ t.fin | date : 'short' }}</td>
+          <td class="p-2 border">{{ t.precio }}</td>
+          <td class="p-2 border space-x-2">
+            <button (click)="editarTurno(t)" class="bg-yellow-500 text-white px-2 py-1 rounded">
+              Editar
+            </button>
+            <button (click)="eliminarTurno(t.id)" class="bg-red-500 text-white px-2 py-1 rounded">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="flex justify-end space-x-2">
+      <button (click)="cerrarTurnoModal()" class="px-4 py-2 bg-gray-400 text-white rounded">
+        Cancelar
+      </button>
+      <button (click)="guardarTurno()" class="px-4 py-2 bg-green-600 text-white rounded">
+        Asignar
+      </button>
+    </div>
+  </div>
+</div>

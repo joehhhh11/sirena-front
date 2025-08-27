@@ -1,0 +1,313 @@
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="flex justify-between items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-800 mb-2 flex items-center">Gestión de Turnos</h1>
+    </div>
+    <button
+      (click)="abrirModal()"
+      class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-2"
+    >
+      <span>Nuevo Turno</span>
+    </button>
+  </div>
+
+  <div class="space-y-8">
+    <ng-container *ngFor="let pelicula of getPeliculasConTurnos()">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="bg-gradient-to-r bg-black p-5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+              <div>
+                <h2 class="text-xl font-bold text-white">{{ pelicula.titulo }}</h2>
+                <p class="text-indigo-100">{{ pelicula.genero }} • {{ pelicula.duracion }}min</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div
+              *ngFor="let t of getTurnosPorPelicula(pelicula.id)"
+              class="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 rounded-lg p-4 hover:shadow-md hover:from-blue-50 hover:to-indigo-50 hover:border-blue-200 transition-all duration-200"
+            >
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-gray-700 font-medium">Sala {{ t.sala }}</span>
+                  </div>
+                  <div class="flex space-x-1">
+                    <span
+                      class="px-2 py-1 text-xs font-medium rounded-full"
+                      [class]="
+                        t.formato === 'D3'
+                          ? 'bg-red-100 text-red-600'
+                          : 'bg-green-100 text-green-600'
+                      "
+                    >
+                      {{ t.formato === 'D3' ? '3D' : '2D' }}
+                    </span>
+                    <span
+                      class="px-2 py-1 text-xs font-medium rounded-full"
+                      [class]="
+                        t.idioma === 'DOB'
+                          ? 'bg-blue-100 text-blue-600'
+                          : 'bg-purple-100 text-purple-600'
+                      "
+                    >
+                      {{ t.idioma }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-3 border">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-sm text-gray-600 font-medium">Horario</span>
+                  </div>
+                  <p class="text-lg font-bold text-gray-800">
+                    {{ t.inicio | date : 'HH:mm' }} - {{ t.fin | date : 'HH:mm' }}
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    {{ t.inicio | date : 'dd/MM/yyyy' }}
+                  </p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-green-50 rounded-lg p-3 border border-green-200">
+                    <div class="flex items-center space-x-2 mb-1">
+                      <span class="text-sm text-green-700 font-medium">Precio</span>
+                    </div>
+                    <p class="text-lg font-bold text-green-800">${{ t.precio }}</p>
+                  </div>
+
+                  <div class="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                    <div class="flex items-center space-x-2 mb-1">
+                      <span class="text-sm text-blue-700 font-medium">Aforo</span>
+                    </div>
+                    <p class="text-lg font-bold text-blue-800">{{ t.aforo }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-4 border-t border-gray-200 flex space-x-2">
+                <button
+                  (click)="abrirModal(t)"
+                  class="flex-1 bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1"
+                >
+                  <span>Editar</span>
+                </button>
+                <button
+                  (click)="eliminar(t.id)"
+                  class="flex-1 bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex items-center justify-center space-x-1"
+                >
+                  <span>Eliminar</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="getTurnosPorPelicula(pelicula.id).length === 0" class="text-center py-8">
+            <p class="text-gray-500 text-lg">No hay turnos programados para esta película</p>
+            <button
+              (click)="abrirModal()"
+              class="mt-4 text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Agregar
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div *ngIf="peliculas.length === 0" class="text-center py-16">
+      <h3 class="text-xl font-semibold text-gray-700 mb-2">No hay películas disponibles</h3>
+      <p class="text-gray-500">Agrega películas para poder crear turnos</p>
+    </div>
+  </div>
+</div>
+
+<div
+  *ngIf="showModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 rounded-t-xl">
+      <h3 class="text-xl font-bold text-white flex items-center">
+        {{ editando ? 'Editar Turno' : 'Nuevo Turno' }}
+      </h3>
+    </div>
+
+    <div class="p-6">
+      <form class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Película</label>
+          <select
+            [(ngModel)]="nuevoTurno.peliculaId"
+            name="peliculaId"
+            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+          >
+            <option value="">Selecciona una película</option>
+            <option *ngFor="let p of peliculas" [value]="p.id">{{ p.titulo }}</option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Sala</label>
+            <input
+              [(ngModel)]="nuevoTurno.sala"
+              name="sala"
+              placeholder="Ej: A1"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Aforo</label>
+            <input
+              [(ngModel)]="nuevoTurno.aforo"
+              name="aforo"
+              type="number"
+              placeholder="120"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Inicio</label>
+            <input
+              [(ngModel)]="nuevoTurno.inicio"
+              name="inicio"
+              type="datetime-local"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Fin</label>
+            <input
+              [(ngModel)]="nuevoTurno.fin"
+              name="fin"
+              type="datetime-local"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Precio</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+            <input
+              [(ngModel)]="nuevoTurno.precio"
+              name="precio"
+              type="number"
+              placeholder="15.50"
+              step="0.01"
+              class="w-full border border-gray-300 rounded-lg pl-8 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Idioma</label>
+            <select
+              [(ngModel)]="nuevoTurno.idioma"
+              name="idioma"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="DOB">Doblada</option>
+              <option value="SUB">Subtitulada</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Formato</label>
+            <select
+              [(ngModel)]="nuevoTurno.formato"
+              name="formato"
+              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+            >
+              <option value="D2">2D</option>
+              <option value="D3">3D</option>
+            </select>
+          </div>
+        </div>
+
+        <div *ngIf="backendError" class="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div class="flex items-center">
+            <p class="text-red-700 text-sm">{{ backendError }}</p>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end space-x-3">
+      <button
+        (click)="cerrarModal()"
+        class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="guardar()"
+        class="px-6 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl"
+      >
+        {{ editando ? 'Actualizar' : 'Guardar' }}
+      </button>
+    </div>
+  </div>
+</div>
+<h2 class="text-xl font-bold mt-6 mb-2">Todas las Películas</h2>
+<table class="w-full border border-gray-300 mb-4">
+  <thead class="bg-gray-200">
+    <tr>
+      <th class="p-2 border">Título</th>
+      <th class="p-2 border">Duración</th>
+      <th class="p-2 border">Clasificación</th>
+      <th class="p-2 border">Estado</th>
+      <th class="p-2 border">Género</th>
+      <th class="p-2 border">Fecha Estreno</th>
+      <th class="p-2 border">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let p of peliculas">
+      <td class="p-2 border">{{ p.titulo }}</td>
+      <td class="p-2 border">{{ p.duracionMin }} min</td>
+      <td class="p-2 border">{{ p.clasificacion }}</td>
+      <td class="p-2 border">{{ p.estado }}</td>
+      <td class="p-2 border">{{ p.genero.join(', ') }}</td>
+      <td class="p-2 border">{{ p.fechaEstreno | date:'shortDate' }}</td>
+      <td class="p-2 border space-x-2">
+        <button (click)="abrirModal(p)" class="bg-yellow-500 text-white px-2 py-1 rounded">Editar</button>
+        <button (click)="eliminar(p.id)" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<div
+  *ngIf="confirmModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+>
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4">
+    <div class="p-6 text-center">
+      <p class="text-gray-600 mb-6">{{ confirmMessage }}</p>
+      <div class="flex justify-center space-x-4">
+        <button
+          (click)="cerrarConfirmacion()"
+          class="px-6 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-lg font-medium transition-colors"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmar()"
+          class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+        >
+          Aceptar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
