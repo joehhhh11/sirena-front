@@ -11,7 +11,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class Turnos implements OnInit {
   turnos: any[] = [];
-  peliculas: any[] = []; // <-- agregamos esta propiedad
+  peliculas: any[] = []; 
   showModal = false;
   confirmModal = false;
 
@@ -53,7 +53,6 @@ getPeliculasActivasConTurnos(): any[] {
     this.http.get<any[]>('http://localhost:3000/api/turnos').subscribe((res) => {
       this.turnos = res.map((t) => ({
         ...t,
-        // opcional: añadir la película completa para mostrar título
         pelicula: this.peliculas.find((p) => p.id === t.peliculaId),
       }));
     });
