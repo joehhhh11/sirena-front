@@ -14,7 +14,7 @@ Este proyecto es el frontend de la aplicación de gestión de películas y turno
 1. Clonar el repositorio:
 
 ```bash
-git clone https://github.com/tu-usuario/cine-frontend.git
+git clone https://github.com/joehhhh11/sirena-front
 cd cine-frontend
 ```
 
@@ -77,4 +77,5 @@ src/
 ```bash
 # Ejecutar la app en modo desarrollo
 ng serve
+
 
